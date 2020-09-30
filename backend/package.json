@@ -1,0 +1,26 @@
+{
+  "name": "jeopardyserver",
+  "version": "1.0.0",
+  "description": "First simple webserver for our Jeopardy on Raspberry Pi project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hanniball23/raspberry_pi_jeopardy.git"
+  },
+  "author": "Thomas, Leon, Paul und Daniel",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hanniball23/raspberry_pi_jeopardy/issues"
+  },
+  "homepage": "https://github.com/hanniball23/raspberry_pi_jeopardy#readme",
+  "dependencies": {
+    "auto-bind": "^4.0.0",
+    "express": "^4.17.1",
+    "onoff": "^6.0.0",
+    "uuid": "^8.3.0",
+    "ws": "^7.3.1"
+  }
+}

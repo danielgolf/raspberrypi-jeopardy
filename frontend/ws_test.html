@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WS example</title>
+  </head>
+  <body>
+    <button id="get_categories">Get categories</button>
+    <button id="start_game">Start Game</button>
+    <button id="select_answer">Select Answer</button>
+    <button id="accept_answer">Accept Answer</button>
+    <button id="reject_answer">Reject Answer</button>
+    <button id="cancel_answer">Cancel Answer</button>
+    <button id="finish_answer">Finish Answer</button>
+    <br />
+    <button id="b0">B0</button>
+    <button id="b1">B1</button>
+    <button id="b2">B2</button>
+    <button id="b3">B3</button>
+    <button id="b4">B4</button>
+    <br />
+    <textarea id="master_textarea" rows="5" cols="80"></textarea>
+    <textarea id="master_state_textarea" rows="15" cols="80"></textarea>
+    <textarea id="viewer_textarea" rows="30" cols="80"></textarea>
+    <script type="module">
+      import WebsocketClient from "./src/ws_client.js";
+
+      let backendAddress = "localhost:8081";
+
+      // append ?raspi to the URL to enable the raspberry ip
+      if (location.search.includes("raspi")) {
+        backendAddress = "10.255.255.1:8081";
+      }
+
+      const master = new WebsocketClient("ws:" + backendAddress, "gamemaster");
+      const viewer = new WebsocketClient("ws:" + backendAddress, "viewer");
+
+      const set = (area, content) =>
+        (area.value = JSON.stringify(content, null, 2));
+
+      let answerId = null;
+
+      viewer
+        .connect()
+        .then(() => {
+          // connected
+          viewer.send_message("get_viewer_view", {}, 1000).then((state) => {
+            set(viewer_textarea, state);
+          });
+
+          viewer.on("view_update", (state) => {
+            set(viewer_textarea, state);
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      master
+        .connect()
+        .then(async () => {
+          const extractAnswerId = ({ categories }) => {
+            if (categories) {
+              answerId = categories[0].answers[0].id;
+            }
+          };
+
+          master.on("view_update", (state) => {
+            set(master_state_textarea, state);
+            extractAnswerId(state);
+          });
+
+          master.send_message("get_gamemaster_view", {}, 500).then((state) => {
+            set(master_state_textarea, state);
+            extractAnswerId(state);
+          });
+
+          b0.onclick = () =>
+            master.send_message("mock_button_press", { buttonID: 0 });
+          b1.onclick = () =>
+            master.send_message("mock_button_press", { buttonID: 1 });
+          b2.onclick = () =>
+            master.send_message("mock_button_press", { buttonID: 2 });
+          b3.onclick = () =>
+            master.send_message("mock_button_press", { buttonID: 3 });
+          b4.onclick = () =>
+            master.send_message("mock_button_press", { buttonID: 4 });
+
+          get_categories.onclick = async () => {
+            const categories = await master.send_message(
+              "get_category_names",
+              {},
+              500
+            );
+            set(master_textarea, categories);
+          };
+
+          start_game.onclick = async () => {
+            let result = await master.send_message(
+              "start_game",
+              {
+                playerNames: ["Paul Line", "Daniel", "Daniel"],
+                selectedCategories: 3,
+              },
+              500
+            );
+            set(master_textarea, result);
+          };
+
+          select_answer.onclick = async () => {
+            const result = await master.send_message(
+              "select_answer",
+              {
+                answerID: answerId,
+              },
+              500
+            );
+            set(master_textarea, result);
+          };
+
+          accept_answer.onclick = async () => {
+            const result = await master.send_message(
+              "process_question",
+              { accept: true },
+              500
+            );
+            set(master_textarea, result);
+          };
+
+          reject_answer.onclick = async () => {
+            const result = await master.send_message(
+              "process_question",
+              { accept: false },
+              500
+            );
+            set(master_textarea, result);
+          };
+
+          cancel_answer.onclick = async () => {
+            const result = await master.send_message("cancel_answer", {}, 500);
+            set(master_textarea, result);
+          };
+
+          finish_answer.onclick = async () => {
+            const result = await master.send_message("finish_answer", {}, 500);
+            set(master_textarea, result);
+          };
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    </script>
+  </body>
+</html>

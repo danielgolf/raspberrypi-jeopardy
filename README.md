@@ -117,7 +117,7 @@ The backend contains of different classes and files, listed below.
 * `gpio.js` Communication with the hardware buzzer
 * `player.js` Was used to maintain a participant - currently obsolet
 
-![Overview Backend](https://raw.githubusercontent.com/danielgolf/raspberrypi-jeopardy/master/misc/overview_backend.jpg)
+![Overview Backend](https://raw.githubusercontent.com/danielgolf/raspberrypi-jeopardy/master/misc/overview_backend.png)
 
 ### Usage
 
